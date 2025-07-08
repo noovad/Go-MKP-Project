@@ -6,9 +6,9 @@ import (
 	"go-gin-project/data"
 	"go-gin-project/helper"
 	"go-gin-project/helper/responsejson"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type TerminalController struct {
@@ -31,7 +31,7 @@ func (c *TerminalController) Create(ctx *gin.Context) {
 
 	terminalResponse, err := c.terminalService.Create(createTerminalRequest)
 	if err != nil {
-		if errors.Is(err, helper.ErrFailedValidation) {
+		if errors.Is(err, helper.ErrValidation) {
 			responsejson.BadRequest(ctx, err, "Validation error")
 			return
 		}
@@ -59,7 +59,16 @@ func (c *TerminalController) FindAll(ctx *gin.Context) {
 }
 
 func (c *TerminalController) FindById(ctx *gin.Context) {
-	terminalId := ctx.Param("terminalId")
+	terminalIdParam := ctx.Param("terminalId")
+	var terminalId uuid.UUID
+	var err error
+	if terminalIdParam != "" {
+		terminalId, err = uuid.Parse(terminalIdParam)
+		if err != nil {
+			responsejson.BadRequest(ctx, err, "Invalid terminalId")
+			return
+		}
+	}
 
 	terminalResponse, err := c.terminalService.FindById(terminalId)
 	if err != nil {
@@ -74,9 +83,15 @@ func (c *TerminalController) FindById(ctx *gin.Context) {
 }
 
 func (c *TerminalController) Update(ctx *gin.Context) {
-	terminalId := ctx.Param("terminalId")
+	terminalIdParam := ctx.Param("terminalId")
+	terminalId, err := uuid.Parse(terminalIdParam)
+	if err != nil {
+		responsejson.BadRequest(ctx, err, "Invalid terminalId")
+		return
+	}
 	updateTerminalRequest := data.TerminalRequest{}
-	err := ctx.ShouldBindJSON(&updateTerminalRequest)
+
+	err = ctx.ShouldBindJSON(&updateTerminalRequest)
 	if err != nil {
 		responsejson.BadRequest(ctx, err, "Invalid request body")
 		return
@@ -88,7 +103,7 @@ func (c *TerminalController) Update(ctx *gin.Context) {
 			responsejson.NotFound(ctx, "Terminal not found")
 			return
 		}
-		if errors.Is(err, helper.ErrFailedValidation) {
+		if errors.Is(err, helper.ErrValidation) {
 			responsejson.BadRequest(ctx, err, "Validation error")
 			return
 		}
@@ -108,14 +123,14 @@ func (c *TerminalController) Update(ctx *gin.Context) {
 }
 
 func (c *TerminalController) Delete(ctx *gin.Context) {
-	terminalId := ctx.Param("terminalId")
-	id, err := strconv.Atoi(terminalId)
+	terminalIdParam := ctx.Param("terminalId")
+	terminalId, err := uuid.Parse(terminalIdParam)
 	if err != nil {
-		responsejson.BadRequest(ctx, err, "Invalid terminal ID")
+		responsejson.BadRequest(ctx, err, "Invalid terminalId")
 		return
 	}
 
-	if err := c.terminalService.Delete(id); err != nil {
+	if err := c.terminalService.Delete(terminalId); err != nil {
 		if errors.Is(err, helper.ErrNotFound) {
 			responsejson.NotFound(ctx, "Terminal not found")
 			return

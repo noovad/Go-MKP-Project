@@ -14,6 +14,7 @@ func SetupRouter() *gin.Engine {
 	})
 
 	TerminalRouter(router)
+	AuthRoutes(router)
 
 	return router
 }

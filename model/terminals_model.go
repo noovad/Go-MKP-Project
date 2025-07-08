@@ -1,8 +1,10 @@
 package model
 
+import "github.com/google/uuid"
+
 type Terminal struct {
-	Id       int    `gorm:"type:int;primary_key"`
-	Name     string `gorm:"type:varchar(100);unique"`
-	Location string `gorm:"type:varchar(255)"`
-	Status   string `gorm:"type:varchar(50)"`
+	Id       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	Name     string    `gorm:"type:varchar(100);unique;not null"`
+	Location string    `gorm:"type:varchar(255);not null"`
+	Status   string    `gorm:"type:varchar(50);not null"`
 }

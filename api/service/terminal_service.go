@@ -7,14 +7,15 @@ import (
 	"go-gin-project/model"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 type TerminalService interface {
 	Create(terminal data.TerminalRequest) (data.TerminalResponse, error)
 	FindAll() ([]data.TerminalResponse, error)
-	FindById(terminalId string) (data.TerminalResponse, error)
-	Update(terminalId string, terminal data.TerminalRequest) (data.TerminalResponse, error)
-	Delete(terminalId int) error
+	FindById(terminalId uuid.UUID) (data.TerminalResponse, error)
+	Update(terminalId uuid.UUID, terminal data.TerminalRequest) (data.TerminalResponse, error)
+	Delete(terminalId uuid.UUID) error
 }
 
 func NewTerminalServiceImpl(terminalRepository repository.TerminalRepository, validate *validator.Validate) TerminalService {
@@ -32,7 +33,7 @@ type TerminalServiceImpl struct {
 func (t *TerminalServiceImpl) Create(terminal data.TerminalRequest) (data.TerminalResponse, error) {
 	err := t.Validate.Struct(terminal)
 	if err != nil {
-		return data.TerminalResponse{}, helper.ErrFailedValidationWrap(err)
+		return data.TerminalResponse{}, helper.WrapValidation(err)
 	}
 
 	terminalModel := model.Terminal{
@@ -76,7 +77,7 @@ func (t *TerminalServiceImpl) FindAll() ([]data.TerminalResponse, error) {
 	return terminals, nil
 }
 
-func (t *TerminalServiceImpl) FindById(terminalId string) (data.TerminalResponse, error) {
+func (t *TerminalServiceImpl) FindById(terminalId uuid.UUID) (data.TerminalResponse, error) {
 	terminalData, err := t.TerminalRepository.FindById(terminalId)
 	if err != nil {
 		return data.TerminalResponse{}, helper.HandlePostgresError(err)
@@ -92,10 +93,10 @@ func (t *TerminalServiceImpl) FindById(terminalId string) (data.TerminalResponse
 	return terminalResponse, nil
 }
 
-func (t *TerminalServiceImpl) Update(terminalId string, terminal data.TerminalRequest) (data.TerminalResponse, error) {
+func (t *TerminalServiceImpl) Update(terminalId uuid.UUID, terminal data.TerminalRequest) (data.TerminalResponse, error) {
 	err := t.Validate.Struct(terminal)
 	if err != nil {
-		return data.TerminalResponse{}, helper.ErrFailedValidationWrap(err)
+		return data.TerminalResponse{}, helper.WrapValidation(err)
 	}
 
 	terminalData, err := t.TerminalRepository.FindById(terminalId)
@@ -103,7 +104,7 @@ func (t *TerminalServiceImpl) Update(terminalId string, terminal data.TerminalRe
 		return data.TerminalResponse{}, helper.HandlePostgresError(err)
 	}
 
-	if terminalData.Id == 0 {
+	if terminalData.Id == uuid.Nil {
 		return data.TerminalResponse{}, helper.ErrNotFound
 	}
 
@@ -126,7 +127,7 @@ func (t *TerminalServiceImpl) Update(terminalId string, terminal data.TerminalRe
 	return terminalResponse, nil
 }
 
-func (t *TerminalServiceImpl) Delete(terminalId int) error {
+func (t *TerminalServiceImpl) Delete(terminalId uuid.UUID) error {
 	err := t.TerminalRepository.Delete(terminalId)
 	if err != nil {
 		return helper.HandlePostgresError(err)

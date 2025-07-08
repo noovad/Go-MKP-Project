@@ -22,3 +22,24 @@ func InitializeTerminalController() *controller.TerminalController {
 	)
 	return &controller.TerminalController{}
 }
+
+func InitializeAuthController() *controller.AuthController {
+	wire.Build(
+		controller.NewAuthController,
+		service.NewAuthService,
+		repository.NewAuthRepository,
+		config.DatabaseConnection,
+		config.NewValidator,
+	)
+	return &controller.AuthController{}
+}
+
+func InitializeAuthService() service.AuthService {
+	wire.Build(
+		service.NewAuthService,
+		repository.NewAuthRepository,
+		config.DatabaseConnection,
+		config.NewValidator,
+	)
+	return nil
+}

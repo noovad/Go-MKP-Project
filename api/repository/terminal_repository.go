@@ -5,15 +5,16 @@ import (
 	"go-gin-project/helper"
 	"go-gin-project/model"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type TerminalRepository interface {
 	Save(terminal model.Terminal) (model.Terminal, error)
 	FindAll() ([]model.Terminal, error)
-	FindById(terminalId string) (terminal model.Terminal, err error)
+	FindById(terminalId uuid.UUID) (terminal model.Terminal, err error)
 	Update(terminal model.Terminal) (model.Terminal, error)
-	Delete(terminalId int) error
+	Delete(terminalId uuid.UUID) error
 }
 
 func NewTerminalRepositoryImpl(Db *gorm.DB) TerminalRepository {
@@ -44,7 +45,7 @@ func (t *TerminalRepositoryImpl) FindAll() ([]model.Terminal, error) {
 	return terminals, nil
 }
 
-func (t *TerminalRepositoryImpl) FindById(terminalId string) (terminalModel model.Terminal, err error) {
+func (t *TerminalRepositoryImpl) FindById(terminalId uuid.UUID) (terminalModel model.Terminal, err error) {
 	var terminal model.Terminal
 	result := t.Db.First(&terminal, terminalId)
 	if result.Error != nil {
@@ -75,7 +76,7 @@ func (t *TerminalRepositoryImpl) Update(terminals model.Terminal) (model.Termina
 	return updatedTerminal, nil
 }
 
-func (t *TerminalRepositoryImpl) Delete(terminalsId int) error {
+func (t *TerminalRepositoryImpl) Delete(terminalsId uuid.UUID) error {
 	deleteResult := t.Db.Delete(&model.Terminal{}, terminalsId)
 	if deleteResult.Error != nil {
 		if errors.Is(deleteResult.Error, gorm.ErrForeignKeyViolated) {

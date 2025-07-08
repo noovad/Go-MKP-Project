@@ -23,3 +23,20 @@ func InitializeTerminalController() *controller.TerminalController {
 	terminalController := controller.NewTerminalController(terminalService)
 	return terminalController
 }
+
+func InitializeAuthController() *controller.AuthController {
+	db := config.DatabaseConnection()
+	authRepository := repository.NewAuthRepository(db)
+	validate := config.NewValidator()
+	authService := service.NewAuthService(authRepository, validate)
+	authController := controller.NewAuthController(authService)
+	return authController
+}
+
+func InitializeAuthService() service.AuthService {
+	db := config.DatabaseConnection()
+	authRepository := repository.NewAuthRepository(db)
+	validate := config.NewValidator()
+	authService := service.NewAuthService(authRepository, validate)
+	return authService
+}
